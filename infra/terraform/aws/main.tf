@@ -56,19 +56,19 @@ locals {
     ManagedBy   = "terraform"
   }
   app_secret_payload = jsonencode({
-    DATABASE_URL              = "postgresql+psycopg://${var.db_username}:${var.db_password}@${aws_db_instance.retainai.address}:5432/${var.db_name}"
-    REDIS_URL                 = "redis://${aws_elasticache_replication_group.retainai.primary_endpoint_address}:6379/0"
-    JWT_SECRET_KEY            = var.jwt_secret_key
-    CONNECTOR_SECRET_KEY      = var.connector_secret_key
-    PRIVACY_TOKEN_KEY         = var.privacy_token_key
-    FEDERATED_SECRET_KEY      = var.federated_secret_key
-    BOOTSTRAP_ADMIN_EMAIL     = var.bootstrap_admin_email
-    BOOTSTRAP_ADMIN_PASSWORD  = var.bootstrap_admin_password
-    DEPLOYMENT_REGION         = var.aws_region
-    ENFORCE_RUNTIME_POLICY    = "true"
-    JOB_BACKEND               = "celery"
-    MLFLOW_EXPERIMENT_NAME    = "retainai-dropout-models"
-    RETAINAI_HOSTNAME         = var.retainai_hostname
+    DATABASE_URL             = "postgresql+psycopg://${var.db_username}:${var.db_password}@${aws_db_instance.retainai.address}:5432/${var.db_name}"
+    REDIS_URL                = "redis://${aws_elasticache_replication_group.retainai.primary_endpoint_address}:6379/0"
+    JWT_SECRET_KEY           = var.jwt_secret_key
+    CONNECTOR_SECRET_KEY     = var.connector_secret_key
+    PRIVACY_TOKEN_KEY        = var.privacy_token_key
+    FEDERATED_SECRET_KEY     = var.federated_secret_key
+    BOOTSTRAP_ADMIN_EMAIL    = var.bootstrap_admin_email
+    BOOTSTRAP_ADMIN_PASSWORD = var.bootstrap_admin_password
+    DEPLOYMENT_REGION        = var.aws_region
+    ENFORCE_RUNTIME_POLICY   = "true"
+    JOB_BACKEND              = "celery"
+    MLFLOW_EXPERIMENT_NAME   = "retainai-dropout-models"
+    RETAINAI_HOSTNAME        = var.retainai_hostname
   })
 }
 
@@ -103,9 +103,9 @@ resource "aws_subnet" "public" {
   availability_zone       = var.availability_zones[count.index]
   map_public_ip_on_launch = true
   tags = merge(local.tags, {
-    Name                                      = "${local.name}-public-${count.index + 1}"
-    "kubernetes.io/cluster/${local.name}"     = "shared"
-    "kubernetes.io/role/elb"                  = "1"
+    Name                                  = "${local.name}-public-${count.index + 1}"
+    "kubernetes.io/cluster/${local.name}" = "shared"
+    "kubernetes.io/role/elb"              = "1"
   })
 }
 
@@ -115,9 +115,9 @@ resource "aws_subnet" "private" {
   cidr_block        = var.private_subnet_cidrs[count.index]
   availability_zone = var.availability_zones[count.index]
   tags = merge(local.tags, {
-    Name                                      = "${local.name}-private-${count.index + 1}"
-    "kubernetes.io/cluster/${local.name}"     = "shared"
-    "kubernetes.io/role/internal-elb"         = "1"
+    Name                                  = "${local.name}-private-${count.index + 1}"
+    "kubernetes.io/cluster/${local.name}" = "shared"
+    "kubernetes.io/role/internal-elb"     = "1"
   })
 }
 
@@ -367,34 +367,34 @@ resource "aws_db_subnet_group" "retainai" {
 }
 
 resource "aws_db_instance" "retainai" {
-  identifier                  = "${local.name}-db"
-  engine                      = "postgres"
-  engine_version              = "16.4"
-  instance_class              = var.db_instance_class
-  allocated_storage           = var.db_allocated_storage
-  max_allocated_storage       = var.db_max_allocated_storage
-  storage_type                = "gp3"
-  storage_encrypted           = true
-  kms_key_id                  = aws_kms_key.retainai.arn
-  db_name                     = var.db_name
-  username                    = var.db_username
-  password                    = var.db_password
-  db_subnet_group_name        = aws_db_subnet_group.retainai.name
-  vpc_security_group_ids      = [aws_security_group.db.id]
-  backup_retention_period     = var.db_backup_retention_days
-  backup_window               = "03:00-04:00"
-  maintenance_window          = "sun:04:00-sun:05:00"
-  auto_minor_version_upgrade  = true
-  deletion_protection         = var.db_deletion_protection
-  skip_final_snapshot         = false
-  final_snapshot_identifier   = "${local.name}-final-snapshot"
-  multi_az                    = var.db_multi_az
-  publicly_accessible         = false
-  performance_insights_enabled = true
+  identifier                      = "${local.name}-db"
+  engine                          = "postgres"
+  engine_version                  = "16.4"
+  instance_class                  = var.db_instance_class
+  allocated_storage               = var.db_allocated_storage
+  max_allocated_storage           = var.db_max_allocated_storage
+  storage_type                    = "gp3"
+  storage_encrypted               = true
+  kms_key_id                      = aws_kms_key.retainai.arn
+  db_name                         = var.db_name
+  username                        = var.db_username
+  password                        = var.db_password
+  db_subnet_group_name            = aws_db_subnet_group.retainai.name
+  vpc_security_group_ids          = [aws_security_group.db.id]
+  backup_retention_period         = var.db_backup_retention_days
+  backup_window                   = "03:00-04:00"
+  maintenance_window              = "sun:04:00-sun:05:00"
+  auto_minor_version_upgrade      = true
+  deletion_protection             = var.db_deletion_protection
+  skip_final_snapshot             = false
+  final_snapshot_identifier       = "${local.name}-final-snapshot"
+  multi_az                        = var.db_multi_az
+  publicly_accessible             = false
+  performance_insights_enabled    = true
   performance_insights_kms_key_id = aws_kms_key.retainai.arn
-  monitoring_interval         = 60
+  monitoring_interval             = 60
   enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
-  tags                        = local.tags
+  tags                            = local.tags
 }
 
 resource "aws_elasticache_subnet_group" "retainai" {
@@ -403,24 +403,24 @@ resource "aws_elasticache_subnet_group" "retainai" {
 }
 
 resource "aws_elasticache_replication_group" "retainai" {
-  replication_group_id          = replace("${local.name}-redis", "_", "-")
-  description                   = "RetainAI Redis"
-  engine                        = "redis"
-  engine_version                = var.redis_engine_version
-  node_type                     = var.redis_node_type
-  port                          = 6379
-  parameter_group_name          = "default.redis7"
-  subnet_group_name             = aws_elasticache_subnet_group.retainai.name
-  security_group_ids            = [aws_security_group.redis.id]
-  num_cache_clusters            = var.redis_num_cache_clusters
-  automatic_failover_enabled    = var.redis_num_cache_clusters > 1
-  multi_az_enabled              = var.redis_num_cache_clusters > 1
-  at_rest_encryption_enabled    = true
-  transit_encryption_enabled    = true
-  auto_minor_version_upgrade    = true
-  snapshot_retention_limit      = 7
-  snapshot_window               = "04:00-05:00"
-  tags                          = local.tags
+  replication_group_id       = replace("${local.name}-redis", "_", "-")
+  description                = "RetainAI Redis"
+  engine                     = "redis"
+  engine_version             = var.redis_engine_version
+  node_type                  = var.redis_node_type
+  port                       = 6379
+  parameter_group_name       = "default.redis7"
+  subnet_group_name          = aws_elasticache_subnet_group.retainai.name
+  security_group_ids         = [aws_security_group.redis.id]
+  num_cache_clusters         = var.redis_num_cache_clusters
+  automatic_failover_enabled = var.redis_num_cache_clusters > 1
+  multi_az_enabled           = var.redis_num_cache_clusters > 1
+  at_rest_encryption_enabled = true
+  transit_encryption_enabled = true
+  auto_minor_version_upgrade = true
+  snapshot_retention_limit   = 7
+  snapshot_window            = "04:00-05:00"
+  tags                       = local.tags
 }
 
 resource "aws_secretsmanager_secret" "retainai_app" {
