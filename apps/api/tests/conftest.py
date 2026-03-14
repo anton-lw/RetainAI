@@ -17,10 +17,13 @@ def test_environment(tmp_path_factory: pytest.TempPathFactory) -> None:
     data_dir = tmp_path_factory.mktemp("retainai-api")
     db_path = data_dir / "retainai-test.db"
     artifact_dir = data_dir / "artifacts"
+    mlruns_dir = data_dir / "mlruns"
     artifact_dir.mkdir(parents=True, exist_ok=True)
+    mlruns_dir.mkdir(parents=True, exist_ok=True)
 
     os.environ["DATABASE_URL"] = f"sqlite:///{db_path.as_posix()}"
     os.environ["MODEL_ARTIFACT_DIR"] = str(artifact_dir)
+    os.environ["MLFLOW_TRACKING_URI"] = f"file:///{mlruns_dir.as_posix()}"
     os.environ["AUTO_SEED"] = "true"
     os.environ["SEED_USER_PASSWORD"] = "retainai-demo"
     os.environ["ENVIRONMENT"] = "test"
