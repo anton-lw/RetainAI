@@ -1,0 +1,15 @@
+apps/web/node_modules/
+apps/web/dist/
+apps/web/*.tsbuildinfo
+apps/web/playwright-report/
+apps/web/test-results/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+apps/api/retainai.db
+apps/api/artifacts/
+apps/api/alembic-smoke.db
+retainai.db
+.pytest_cache/
+data/

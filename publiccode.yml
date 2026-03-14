@@ -1,0 +1,54 @@
+publiccodeYmlVersion: "0.4"
+name: RetainAI
+applicationSuite: RetainAI
+# Replace the placeholder URLs below before publishing or submitting to DPGA.
+# See docs/public-metadata-and-steward-template.md.
+url: "https://github.com/anton-lw/retainai"
+landingURL: "https://github.com/anton-lw/retainai"
+softwareType: "standalone/web"
+releaseDate: "2026-03-13"
+platforms:
+  - web
+  - windows
+  - linux
+  - mac
+categories:
+  - case-management
+  - data-analytics
+  - business-intelligence
+  - data-collection
+usedBy:
+  - "Designed for NGOs, research partners, and public-sector implementers in development programs"
+developmentStatus: beta
+softwareVersion: "0.1.0"
+description:
+  en:
+    localisedName: RetainAI
+    shortDescription: "Open-source retention operations software for development programs."
+    longDescription: >
+      RetainAI helps organizations ingest longitudinal monitoring data, score
+      near-term disengagement risk, prioritize follow-up actions within real
+      field capacity, log interventions, run validation and shadow-mode
+      evaluation, and export program governance and donor reporting outputs.
+    features:
+      - "CSV/XLSX and connector-based ingestion"
+      - "Capacity-aware risk queue and intervention workflows"
+      - "Temporal backtesting, fairness review, and shadow mode"
+      - "Self-hosted deployment with open-source infrastructure assets"
+legal:
+  license: MIT
+maintenance:
+  type: "community"
+localisation:
+  localisationReady: false
+  availableLanguages:
+    - en
+dependsOn:
+  open:
+    - name: FastAPI
+    - name: React
+    - name: PostgreSQL
+    - name: Alembic
+    - name: Docker
+roadmap: "https://github.com/anton-lw/retainai/blob/main/docs/roadmap.md"
+documentation: "https://github.com/anton-lw/retainai/tree/main/docs"

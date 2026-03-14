@@ -1,0 +1,4 @@
+external_id,name,region,enrollment_date,status,cohort,phase,gender,household_size,pmt_score,food_insecurity_index,distance_to_service_km,notes,opted_out
+CASH-0001,Fatima Idris,Northern Region,2025-11-14,active,2025-A,Month 3 onboarding,Female,6,24.5,6.2,12.4,harvest migration risk,false
+CASH-0002,Grace Nyathi,River Belt,2025-10-09,active,2025-B,Month 5 transfer cycle,Female,4,38.0,3.8,4.1,childcare barrier,false
+

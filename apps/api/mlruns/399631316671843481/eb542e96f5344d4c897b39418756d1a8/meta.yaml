@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/Anton/Downloads/RetainAI/apps/api/mlruns/399631316671843481/eb542e96f5344d4c897b39418756d1a8/artifacts
+end_time: 1773181818746
+entry_point_name: ''
+experiment_id: '399631316671843481'
+lifecycle_stage: active
+run_id: eb542e96f5344d4c897b39418756d1a8
+run_name: retainai-logisticregression
+run_uuid: eb542e96f5344d4c897b39418756d1a8
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1773181816916
+status: 3
+tags: []
+user_id: Anton

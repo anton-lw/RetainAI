@@ -1,0 +1,42 @@
+{
+  "partner_name": "Example NGO",
+  "program_name": "Pilot Cash Transfer",
+  "program_type": "Cash Transfer",
+  "country": "Kenya",
+  "beneficiaries_file": "beneficiaries.csv",
+  "events_file": "events.csv",
+  "notes": "Historical export for RetainAI shadow-mode validation.",
+  "export_window": {
+    "from": "2024-01-01",
+    "to": "2025-12-31"
+  },
+  "fields_included": {
+    "beneficiaries": [
+      "external_id",
+      "name",
+      "region",
+      "enrollment_date",
+      "status",
+      "dropout_date",
+      "completion_date",
+      "cohort",
+      "phase",
+      "gender",
+      "household_type",
+      "household_size",
+      "pmt_score",
+      "food_insecurity_index",
+      "distance_to_service_km",
+      "notes"
+    ],
+    "events": [
+      "external_id",
+      "event_date",
+      "event_type",
+      "successful",
+      "response_received",
+      "source",
+      "notes"
+    ]
+  }
+}

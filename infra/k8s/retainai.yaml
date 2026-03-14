@@ -1,0 +1,446 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: retainai
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: retainai-config
+  namespace: retainai
+data:
+  ENVIRONMENT: production
+  API_PREFIX: /api/v1
+  ALLOWED_ORIGINS: https://retainai.example.org
+  MODEL_ARTIFACT_DIR: /app-data/artifacts
+  MLFLOW_TRACKING_URI: file:///app-data/mlruns
+  MLFLOW_EXPERIMENT_NAME: retainai-dropout-models
+  JOB_BACKEND: celery
+  JOB_MAX_ATTEMPTS: "4"
+  JOB_RETRY_BACKOFF_SECONDS: "60"
+  REDIS_URL: redis://replace-with-managed-redis-endpoint:6379/0
+  CELERY_TASK_ALWAYS_EAGER: "false"
+  DEPLOYMENT_LABEL: retainai-prod
+  DEPLOYMENT_REGION: eu-north-1
+  ENFORCE_RUNTIME_POLICY: "true"
+  HUGGINGFACE_SENTIMENT_ENABLED: "false"
+  SSO_ENABLED: "false"
+  SSO_MODE: header
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: retainai-secrets
+  namespace: retainai
+type: Opaque
+stringData:
+  DATABASE_URL: postgresql+psycopg://retainai:replace-me@replace-with-managed-postgres-endpoint:5432/retainai
+  JWT_SECRET_KEY: replace-me
+  CONNECTOR_SECRET_KEY: replace-me
+  PRIVACY_TOKEN_KEY: replace-me
+  FEDERATED_SECRET_KEY: replace-me
+  SSO_OIDC_CLIENT_ID: ""
+  SSO_OIDC_CLIENT_SECRET: ""
+  BOOTSTRAP_ADMIN_EMAIL: admin@example.org
+  BOOTSTRAP_ADMIN_PASSWORD: replace-me
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: retainai-api
+  namespace: retainai
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: retainai-worker
+  namespace: retainai
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: retainai-artifacts
+  namespace: retainai
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: retainai-mlruns
+  namespace: retainai
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: retainai-migrate
+  namespace: retainai
+spec:
+  backoffLimit: 4
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: retainai-migrate
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: migrate
+          image: ghcr.io/example/retainai-api:latest
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-m", "alembic", "-c", "alembic.ini", "upgrade", "head"]
+          envFrom:
+            - configMapRef:
+                name: retainai-config
+            - secretRef:
+                name: retainai-secrets
+          volumeMounts:
+            - name: artifacts
+              mountPath: /app-data/artifacts
+            - name: mlruns
+              mountPath: /app-data/mlruns
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: artifacts
+          persistentVolumeClaim:
+            claimName: retainai-artifacts
+        - name: mlruns
+          persistentVolumeClaim:
+            claimName: retainai-mlruns
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: retainai
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: retainai-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: retainai-api
+    spec:
+      serviceAccountName: retainai-api
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: api
+          image: ghcr.io/example/retainai-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: retainai-config
+            - secretRef:
+                name: retainai-secrets
+          env:
+            - name: PORT
+              value: "8000"
+          volumeMounts:
+            - name: artifacts
+              mountPath: /app-data/artifacts
+            - name: mlruns
+              mountPath: /app-data/mlruns
+          startupProbe:
+            httpGet:
+              path: /livez
+              port: http
+            periodSeconds: 10
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 250m
+              memory: 768Mi
+            limits:
+              cpu: "1"
+              memory: 2Gi
+      volumes:
+        - name: artifacts
+          persistentVolumeClaim:
+            claimName: retainai-artifacts
+        - name: mlruns
+          persistentVolumeClaim:
+            claimName: retainai-mlruns
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: retainai
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: retainai-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: retainai-worker
+    spec:
+      serviceAccountName: retainai-worker
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: worker
+          image: ghcr.io/example/retainai-api:latest
+          imagePullPolicy: IfNotPresent
+          command: ["celery", "-A", "app.celery_app.celery_app", "worker", "-l", "info", "--concurrency=2"]
+          envFrom:
+            - configMapRef:
+                name: retainai-config
+            - secretRef:
+                name: retainai-secrets
+          volumeMounts:
+            - name: artifacts
+              mountPath: /app-data/artifacts
+            - name: mlruns
+              mountPath: /app-data/mlruns
+          startupProbe:
+            exec:
+              command: ["python", "-c", "import app.celery_app; print('ok')"]
+            periodSeconds: 10
+            failureThreshold: 20
+          livenessProbe:
+            exec:
+              command: ["/bin/sh", "-c", "celery -A app.celery_app.celery_app inspect ping -d celery@$HOSTNAME"]
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 250m
+              memory: 768Mi
+            limits:
+              cpu: "1"
+              memory: 2Gi
+      volumes:
+        - name: artifacts
+          persistentVolumeClaim:
+            claimName: retainai-artifacts
+        - name: mlruns
+          persistentVolumeClaim:
+            claimName: retainai-mlruns
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: retainai
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: retainai-web
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: retainai-web
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        fsGroup: 101
+      containers:
+        - name: web
+          image: ghcr.io/example/retainai-web:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  namespace: retainai
+spec:
+  selector:
+    app.kubernetes.io/name: retainai-api
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: retainai
+spec:
+  selector:
+    app.kubernetes.io/name: retainai-web
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api
+  namespace: retainai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: retainai-api
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: web
+  namespace: retainai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: retainai-web
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api
+  namespace: retainai
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: web
+  namespace: retainai
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: web
+  minReplicas: 2
+  maxReplicas: 4
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: retainai
+  namespace: retainai
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: 50m
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - retainai.example.org
+      secretName: retainai-tls
+  rules:
+    - host: retainai.example.org
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web
+                port:
+                  number: 80

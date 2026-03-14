@@ -1,0 +1,114 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: retainai
+      POSTGRES_USER: retainai
+      POSTGRES_PASSWORD: retainai
+    ports:
+      - "5432:5432"
+    volumes:
+      - retainai-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U retainai -d retainai"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - retainai-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: ./apps/api
+    command: ["python", "-m", "alembic", "-c", "alembic.ini", "upgrade", "head"]
+    working_dir: /app
+    environment:
+      DATABASE_URL: postgresql+psycopg://retainai:retainai@postgres:5432/retainai
+      MODEL_ARTIFACT_DIR: /artifacts
+      MLFLOW_TRACKING_URI: file:///mlruns
+      JOB_BACKEND: celery
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - retainai-artifacts:/artifacts
+      - retainai-mlruns:/mlruns
+
+  api:
+    build:
+      context: ./apps/api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://retainai:retainai@postgres:5432/retainai
+      MODEL_ARTIFACT_DIR: /artifacts
+      MLFLOW_TRACKING_URI: file:///mlruns
+      JOB_BACKEND: celery
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "8000:8000"
+    volumes:
+      - retainai-artifacts:/artifacts
+      - retainai-mlruns:/mlruns
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readyz').read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+
+  worker:
+    build:
+      context: ./apps/api
+    command: ["celery", "-A", "app.celery_app.celery_app", "worker", "-l", "info"]
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://retainai:retainai@postgres:5432/retainai
+      MODEL_ARTIFACT_DIR: /artifacts
+      MLFLOW_TRACKING_URI: file:///mlruns
+      JOB_BACKEND: celery
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      api:
+        condition: service_healthy
+    volumes:
+      - retainai-artifacts:/artifacts
+      - retainai-mlruns:/mlruns
+
+  web:
+    build:
+      context: ./apps/web
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "5173:80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1/"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  retainai-artifacts:
+  retainai-mlruns:
+  retainai-postgres:
+  retainai-redis:

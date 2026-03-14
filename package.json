@@ -1,0 +1,11 @@
+{
+  "name": "retainai",
+  "private": true,
+  "scripts": {
+    "dev:web": "npm --prefix apps/web run dev",
+    "build:web": "npm --prefix apps/web run build",
+    "test:e2e:web": "npm --prefix apps/web run test:e2e",
+    "smoke:api": "C:\\Users\\Anton\\AppData\\Local\\anaconda3\\python.exe scripts\\smoke_check.py",
+    "smoke:compose": "C:\\Users\\Anton\\AppData\\Local\\anaconda3\\python.exe scripts\\compose_smoke.py"
+  }
+}

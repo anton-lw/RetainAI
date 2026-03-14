@@ -1,0 +1,4 @@
+external_id,event_date,event_type,successful,response_received,source,notes
+CASH-0001,2026-02-01,payment_collection,false,false,csv,missed collection point visit
+CASH-0001,2026-02-15,payment_collection,false,false,csv,food insecurity reported
+CASH-0002,2026-02-03,payment_collection,true,true,csv,collection completed successfully

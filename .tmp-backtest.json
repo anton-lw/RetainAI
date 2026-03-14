@@ -1,0 +1,249 @@
+{
+  "status": "needs_more_data",
+  "note": "Temporal backtesting completed, but the latest holdout window does not contain both dropout and non-dropout cases. More historical outcome coverage is required before trusting the result.",
+  "algorithm": "LogisticRegression",
+  "horizon_days": 30,
+  "min_history_days": 60,
+  "top_k_share": 0.25,
+  "top_k_count": 4,
+  "samples_evaluated": 62,
+  "positive_cases": 1,
+  "split": {
+    "temporal_strategy": "holdout",
+    "train_cases": 46,
+    "test_cases": 16,
+    "train_positive_rate": 0.0217,
+    "test_positive_rate": 0.0,
+    "train_start": "2025-11-15",
+    "train_end": "2026-01-11",
+    "test_start": "2026-01-11",
+    "test_end": "2026-02-07"
+  },
+  "metrics": {
+    "auc_roc": {
+      "value": 0.0,
+      "lower_ci": 0.0,
+      "upper_ci": 0.0
+    },
+    "pr_auc": {
+      "value": 0.0,
+      "lower_ci": 0.0,
+      "upper_ci": 0.0
+    },
+    "precision": {
+      "value": 0.0,
+      "lower_ci": 0.0,
+      "upper_ci": 0.0
+    },
+    "recall": {
+      "value": 0.0,
+      "lower_ci": 0.0,
+      "upper_ci": 0.0
+    },
+    "f1": {
+      "value": 0.0,
+      "lower_ci": 0.0,
+      "upper_ci": 0.0
+    },
+    "brier_score": {
+      "value": 0.0,
+      "lower_ci": 0.0,
+      "upper_ci": 0.0
+    },
+    "top_k_precision": {
+      "value": 0.0,
+      "lower_ci": 0.0,
+      "upper_ci": 0.0
+    },
+    "top_k_recall": {
+      "value": 0.0,
+      "lower_ci": 0.0,
+      "upper_ci": 0.0
+    }
+  },
+  "calibration": [
+    {
+      "bin_index": 1,
+      "lower_bound": 0.0,
+      "upper_bound": 0.0,
+      "predicted_rate": 0.0,
+      "observed_rate": 0.0,
+      "count": 4
+    },
+    {
+      "bin_index": 2,
+      "lower_bound": 0.0,
+      "upper_bound": 0.0,
+      "predicted_rate": 0.0,
+      "observed_rate": 0.0,
+      "count": 3
+    },
+    {
+      "bin_index": 3,
+      "lower_bound": 0.0,
+      "upper_bound": 0.0,
+      "predicted_rate": 0.0,
+      "observed_rate": 0.0,
+      "count": 3
+    },
+    {
+      "bin_index": 4,
+      "lower_bound": 0.0,
+      "upper_bound": 0.0,
+      "predicted_rate": 0.0,
+      "observed_rate": 0.0,
+      "count": 3
+    },
+    {
+      "bin_index": 5,
+      "lower_bound": 0.0001,
+      "upper_bound": 0.0003,
+      "predicted_rate": 0.0002,
+      "observed_rate": 0.0,
+      "count": 3
+    }
+  ],
+  "fairness_audit": {
+    "status": "insufficient_data",
+    "note": "Some monitored groups do not yet have enough labeled validation data for a reliable fairness audit.",
+    "dimensions": [
+      {
+        "dimension": "gender",
+        "status": "ok",
+        "note": "No large disparity gaps were detected across gender in the current validation sample.",
+        "max_false_positive_gap": 0.0,
+        "max_recall_gap": null,
+        "groups": [
+          {
+            "group_name": "Male",
+            "sample_size": 8,
+            "positive_count": 0,
+            "predicted_positive_count": 0,
+            "flagged_rate": 0.0,
+            "false_positive_rate": 0.0,
+            "recall_rate": null,
+            "severity": "ok",
+            "guidance": null
+          },
+          {
+            "group_name": "Female",
+            "sample_size": 8,
+            "positive_count": 0,
+            "predicted_positive_count": 0,
+            "flagged_rate": 0.0,
+            "false_positive_rate": 0.0,
+            "recall_rate": null,
+            "severity": "ok",
+            "guidance": null
+          }
+        ]
+      },
+      {
+        "dimension": "region",
+        "status": "insufficient_data",
+        "note": "There is not enough labeled validation data to assess geography reliably yet.",
+        "max_false_positive_gap": 0.0,
+        "max_recall_gap": null,
+        "groups": [
+          {
+            "group_name": "Lake District",
+            "sample_size": 1,
+            "positive_count": 0,
+            "predicted_positive_count": 0,
+            "flagged_rate": 0.0,
+            "false_positive_rate": null,
+            "recall_rate": null,
+            "severity": "insufficient_data",
+            "guidance": null
+          },
+          {
+            "group_name": "Northern Corridor",
+            "sample_size": 3,
+            "positive_count": 0,
+            "predicted_positive_count": 0,
+            "flagged_rate": 0.0,
+            "false_positive_rate": 0.0,
+            "recall_rate": null,
+            "severity": "insufficient_data",
+            "guidance": null
+          },
+          {
+            "group_name": "Coastal Zone",
+            "sample_size": 1,
+            "positive_count": 0,
+            "predicted_positive_count": 0,
+            "flagged_rate": 0.0,
+            "false_positive_rate": null,
+            "recall_rate": null,
+            "severity": "insufficient_data",
+            "guidance": null
+          },
+          {
+            "group_name": "Urban South",
+            "sample_size": 4,
+            "positive_count": 0,
+            "predicted_positive_count": 0,
+            "flagged_rate": 0.0,
+            "false_positive_rate": 0.0,
+            "recall_rate": null,
+            "severity": "insufficient_data",
+            "guidance": null
+          },
+          {
+            "group_name": "Northern Region",
+            "sample_size": 4,
+            "positive_count": 0,
+            "predicted_positive_count": 0,
+            "flagged_rate": 0.0,
+            "false_positive_rate": 0.0,
+            "recall_rate": null,
+            "severity": "insufficient_data",
+            "guidance": null
+          },
+          {
+            "group_name": "Eastern Corridor",
+            "sample_size": 3,
+            "positive_count": 0,
+            "predicted_positive_count": 0,
+            "flagged_rate": 0.0,
+            "false_positive_rate": 0.0,
+            "recall_rate": null,
+            "severity": "insufficient_data",
+            "guidance": null
+          }
+        ]
+      },
+      {
+        "dimension": "household_type",
+        "status": "ok",
+        "note": "No large disparity gaps were detected across household type in the current validation sample.",
+        "max_false_positive_gap": 0.0,
+        "max_recall_gap": null,
+        "groups": [
+          {
+            "group_name": "Standard",
+            "sample_size": 12,
+            "positive_count": 0,
+            "predicted_positive_count": 0,
+            "flagged_rate": 0.0,
+            "false_positive_rate": 0.0,
+            "recall_rate": null,
+            "severity": "ok",
+            "guidance": null
+          },
+          {
+            "group_name": "Female-headed",
+            "sample_size": 4,
+            "positive_count": 0,
+            "predicted_positive_count": 0,
+            "flagged_rate": 0.0,
+            "false_positive_rate": 0.0,
+            "recall_rate": null,
+            "severity": "insufficient_data",
+            "guidance": null
+          }
+        ]
+      }
+    ]
+  }
+}

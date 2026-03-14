@@ -1,0 +1,15 @@
+aws_region               = "eu-north-1"
+environment              = "production"
+retainai_hostname        = "retainai.example.org"
+availability_zones       = ["eu-north-1a", "eu-north-1b"]
+public_subnet_cidrs      = ["10.42.1.0/24", "10.42.2.0/24"]
+private_subnet_cidrs     = ["10.42.11.0/24", "10.42.12.0/24"]
+allowed_ingress_cidrs    = ["203.0.113.0/24"]
+
+db_password              = "replace-me"
+bootstrap_admin_email    = "admin@example.org"
+bootstrap_admin_password = "replace-me"
+jwt_secret_key           = "replace-me"
+connector_secret_key     = "replace-me"
+privacy_token_key        = "replace-me"
+federated_secret_key     = "replace-me"
