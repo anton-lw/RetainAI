@@ -16,7 +16,7 @@ pydantic-settings==2.10.1
 pytest==8.4.2
 python-jose==3.5.0
 python-multipart==0.0.20
-redis==6.4.0
+redis==7.3.0
 reportlab==4.4.1
 sdv>=1.18,<2
 scipy==1.16.2
